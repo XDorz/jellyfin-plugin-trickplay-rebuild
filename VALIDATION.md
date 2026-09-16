@@ -1,5 +1,31 @@
 # Validation — 2026-09-16
 
+## Plugin 1.0.1: Jellyfin 12.0 and 12.1 compatibility regression
+
+The 1.0.0 build incorrectly required Jellyfin 12.1 in its package references,
+manifest and runtime guard. A fresh official 12.0 server skipped this plugin and
+returned HTTP 404 for its routes. A loaded instance would also reject 12.0 with
+`503 incompatible_server`. An Active entry in the plugin dashboard was therefore
+not sufficient evidence that the rebuild endpoint worked.
+
+Compared the v12.0/v12.1 native Trickplay interface, implementation, Video entity
+and Trickplay options: these files are identical. The plugin now compiles against
+12.0, declares target ABI 12.0 and allows the two verified server versions.
+
+Ran the 14 automated tests with both 12.0 and 12.1 dependencies. Also started
+separate official portable 12.0 and 12.1 servers on loopback only, with fresh
+databases and synthetic media. On 12.0, reproduced the old plugin's HTTP 404,
+then replaced its DLL and manifest in the same directory and restarted.
+On both servers, the updated plugin was registered as 1.0.1.0 and verified:
+
+- Unauthenticated rebuild rejected (401); administrator request accepted (202).
+- Duplicate submission rejected (409); status reached completed.
+- A second rebuild replaced existing native preview tiles.
+- Movie metadata from the same details endpoint and the NFO checksum stayed identical.
+
+Both temporary servers were stopped after testing. No production library was used.
+Findroid now distinguishes 404, 405 and 503 in its user-facing error messages.
+
 ## Local Jellyfin 12.1 integration
 
 Started the official portable Jellyfin 12.1 release with an isolated database,
