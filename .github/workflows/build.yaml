@@ -3,6 +3,10 @@ name: Build Trickplay rebuild plugin
 on:
   push:
     branches: [main]
+    paths:
+      - 'TrickplayRebuild/**'
+      - 'TrickplayRebuild.Tests/**'
+      - '.github/workflows/build.yaml'
   workflow_dispatch:
 
 permissions:

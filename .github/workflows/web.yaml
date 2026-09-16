@@ -1,0 +1,68 @@
+name: Test and release Jellyfin Web userscript
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'web/**'
+      - '.github/workflows/web.yaml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: trickplay-web-release
+  cancel-in-progress: false
+
+jobs:
+  web:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Select browser
+        run: |
+          browser_path="$(command -v google-chrome || true)"
+          if [ -n "$browser_path" ]; then
+            echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$browser_path" >> "$GITHUB_ENV"
+          else
+            npx playwright install --with-deps chromium
+          fi
+      - run: npm run check
+      - run: npm test
+      - name: Prepare release
+        id: package
+        run: |
+          node -e 'const fs = require("node:fs"); const version = require("./package.json").version; if (!/^\d+\.\d+\.\d+$/.test(version)) throw new Error("Invalid version"); fs.appendFileSync(process.env.GITHUB_OUTPUT, "version=" + version + "\n");'
+          sha256sum trickplay-rebuild.user.js > SHA256SUMS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: jellyfin-web-trickplay-rebuild
+          path: |
+            web/trickplay-rebuild.user.js
+            web/SHA256SUMS
+      - uses: softprops/action-gh-release@v3
+        with:
+          tag_name: web-v${{ steps.package.outputs.version }}-build.${{ github.run_number }}
+          target_commitish: ${{ github.sha }}
+          name: Jellyfin Web preview rebuild ${{ steps.package.outputs.version }} (build ${{ github.run_number }})
+          prerelease: true
+          make_latest: false
+          body: |
+            Browser userscript for Jellyfin Web 12.0 / 12.1. Adds a native-style image/refresh button after Download and uses Jellyfin's own toast messages.
+            Requires server plugin 1.0.1.0. No DLL update or server Web-file modification is needed.
+            Install the .user.js in Tampermonkey, then reload Jellyfin. Automatically matches /web/ paths on any domain; only activates for logged-in administrators on video details.
+          files: |
+            web/trickplay-rebuild.user.js
+            web/SHA256SUMS

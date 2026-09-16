@@ -5,6 +5,10 @@ Trickplay generator directly, using the server's existing settings, without
 running the metadata refresh pipeline. No Jellyfin services are replaced and no
 native scheduled tasks are changed.
 
+For the existing Jellyfin Web detail page, an optional [userscript](web/README.md)
+adds a matching native-style button and uses Jellyfin's own toast notifications.
+It works with server plugin 1.0.1.0 and needs no server Web-file changes.
+
 ## Install on LinuxServer Jellyfin
 
 This build supports **Jellyfin 12.0 and 12.1 / .NET 10**, compiled against 12.0. Check the running server version in
