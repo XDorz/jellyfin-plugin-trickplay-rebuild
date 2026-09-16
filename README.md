@@ -73,6 +73,8 @@ dotnet test TrickplayRebuild.Tests -c Release
 ```
 
 The plugin workflow publishes the DLL/manifest ZIP separately from the signed APK.
+Each successful run gets a new versioned release tag, so updating the build workflow
+does not require rewriting an old tag or granting a long-lived credential to CI.
 Tests cover concurrent duplicate submissions, rate/queue bounds, jobs exceeding
 10 minutes, failure recovery, shutdown, HTTP authorization and malformed IDs.
 

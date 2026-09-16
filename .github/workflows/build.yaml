@@ -37,16 +37,12 @@ jobs:
         with:
           name: trickplay-rebuild-jellyfin-12.1
           path: dist/*.*
-      - name: Update plugin release tag
-        run: |
-          git tag --force latest
-          git push --force origin refs/tags/latest
       - name: Publish plugin
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: latest
+          tag_name: v1.0.0-build.${{ github.run_number }}
           target_commitish: ${{ github.sha }}
-          name: Trickplay Rebuild for Jellyfin 12.1
+          name: Trickplay Rebuild 1.0.0 (build ${{ github.run_number }}, Jellyfin 12.1)
           prerelease: true
           make_latest: false
           overwrite_files: true
