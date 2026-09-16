@@ -23,7 +23,9 @@ jobs:
         with:
           dotnet-version: '10.0.x'
       - name: Build and test
-        run: dotnet test TrickplayRebuild.Tests -c Release --nologo
+        run: |
+          dotnet test TrickplayRebuild.Tests -c Release --nologo -p:JellyfinTestVersion=12.0.0
+          dotnet test TrickplayRebuild.Tests -c Release --nologo -p:JellyfinTestVersion=12.1.0
       - name: Package plugin
         run: |
           mkdir -p dist/TrickplayRebuild
@@ -31,25 +33,27 @@ jobs:
           cp TrickplayRebuild/meta.json dist/TrickplayRebuild/
           cp README.md dist/TrickplayRebuild/README.md
           cd dist
-          zip -r trickplay-rebuild-jellyfin-12.1.zip TrickplayRebuild
-          sha256sum trickplay-rebuild-jellyfin-12.1.zip > SHA256SUMS
+          zip -r trickplay-rebuild-jellyfin-12.0-12.1.zip TrickplayRebuild
+          sha256sum trickplay-rebuild-jellyfin-12.0-12.1.zip > SHA256SUMS
       - uses: actions/upload-artifact@v4
         with:
-          name: trickplay-rebuild-jellyfin-12.1
+          name: trickplay-rebuild-jellyfin-12.0-12.1
           path: dist/*.*
       - name: Publish plugin
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: v1.0.0-build.${{ github.run_number }}
+          tag_name: v1.0.1-build.${{ github.run_number }}
           target_commitish: ${{ github.sha }}
-          name: Trickplay Rebuild 1.0.0 (build ${{ github.run_number }}, Jellyfin 12.1)
+          name: Trickplay Rebuild 1.0.1 (build ${{ github.run_number }}, Jellyfin 12.0 / 12.1)
           prerelease: true
           make_latest: false
           overwrite_files: true
           body: |
             Administrator-only single-video Trickplay regeneration, without metadata refresh.
-            Built for Jellyfin 12.1 (.NET 10). Extract the TrickplayRebuild directory into /config/data/plugins on LinuxServer and restart Jellyfin.
+            Fixes rejection of Jellyfin 12.0 requests despite the plugin showing Active.
+            Supports Jellyfin 12.0 and 12.1 (.NET 10), built against 12.0. Replace the existing TrickplayRebuild directory in /config/data/plugins on LinuxServer and restart Jellyfin.
+            Dashboard plugin version: 1.0.1.0. Works with the existing Findroid custom APK.
             Uses native Jellyfin settings. Deduplicates plugin requests only; native jobs are not intercepted.
           files: |
-            dist/trickplay-rebuild-jellyfin-12.1.zip
+            dist/trickplay-rebuild-jellyfin-12.0-12.1.zip
             dist/SHA256SUMS

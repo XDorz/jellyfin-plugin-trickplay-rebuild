@@ -7,10 +7,10 @@ native scheduled tasks are changed.
 
 ## Install on LinuxServer Jellyfin
 
-This build targets **Jellyfin 12.1 / .NET 10**. Check the running server version in
+This build supports **Jellyfin 12.0 and 12.1 / .NET 10**, compiled against 12.0. Check the running server version in
 the dashboard; the Docker `latest` tag alone does not identify the installed version.
 
-1. Download `trickplay-rebuild-jellyfin-12.1.zip` and verify it using the published
+1. Download `trickplay-rebuild-jellyfin-12.0-12.1.zip` and verify it using the published
    `SHA256SUMS` (the checksum detects download corruption, not publisher compromise).
 2. Extract the `TrickplayRebuild` directory into `/config/data/plugins/` inside the
    container. With an existing compose volume `./jellyfin:/config`, that is
@@ -21,6 +21,10 @@ the dashboard; the Docker `latest` tag alone does not identify the installed ver
    account in Findroid. Open a movie/episode and tap **重建预览图**.
 
 No extra port, plugin catalog, database, server API key or Docker image is required.
+When upgrading from 1.0.0.0, stop Jellyfin and replace both the DLL and `meta.json`
+in the existing plugin directory. Do not leave a second copy of the old plugin.
+After restarting, the dashboard should show **1.0.1.0**. The existing Findroid APK
+works with this update; no server upgrade is needed for Jellyfin 12.0.
 To remove: stop Jellyfin, remove this plugin directory, and restart. Generated
 previews remain. Test compatibility before upgrading Jellyfin.
 

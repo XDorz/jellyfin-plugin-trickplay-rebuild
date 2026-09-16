@@ -30,7 +30,8 @@ public sealed class JellyfinRebuildExecutor(
     private LibraryOptions Validate(Video video)
     {
         var version = typeof(ITrickplayManager).Assembly.GetName().Version;
-        if (version is null || version.Major != 12 || version.Minor != 1)
+        // Compile against 12.0; the native Trickplay contract is unchanged in 12.1.
+        if (version is null || version.Major != 12 || version.Minor is not (0 or 1))
             throw new RebuildException(503, "incompatible_server");
         var options = library.GetLibraryOptions(video);
         if (options is null || !options.EnableTrickplayImageExtraction)
