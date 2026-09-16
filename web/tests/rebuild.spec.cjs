@@ -18,12 +18,12 @@ async function open(page, options = {}) {
             return route.fulfill({ contentType: 'text/html', body: `<!doctype html><html lang="zh-CN"><head>
                 <meta name="application-name" content="${options.application || 'Jellyfin'}">
                 <style>.hide {display:none !important} .mainDetailButtons {display:flex} button {width:48px;height:48px}</style>
-                </head><body><div class="itemDetailPage"><div class="mainDetailButtons">
+                </head><body><div class="itemDetailPage"><div class="detailRibbon"><div class="mainDetailButtons">
                 <button class="button-flat detailButton btnPlay">Play</button>
                 <button class="button-flat detailButton btnDownload">Download</button>
-                <button class="button-flat detailButton btnMoreCommands">More</button></div>
+                <button class="button-flat detailButton btnMoreCommands">More</button></div></div><div class="detailPagePrimaryContent">
                 <select class="selectSource"><option value="${itemId}">Main</option>
-                ${options.multiple ? `<option value="${alternateId}">Alternate</option>` : ''}</select></div></body></html>` });
+                ${options.multiple ? `<option value="${alternateId}">Alternate</option>` : ''}</select></div></div></body></html>` });
         }
         state.requests.push({ path: url.pathname, method: request.method(), query: url.searchParams,
             authorization: request.headers().authorization });
@@ -75,6 +75,8 @@ test('uses the native detail button position, SVG, cached identity and same-orig
     await expect(button(page).locator('svg')).toHaveAttribute('stroke', 'currentColor');
     await button(page).click();
     await toast(page, '已提交');
+    await expect(page.locator('.detailPagePrimaryContent > .jf-trickplay-rebuild-status')).toBeVisible();
+    await expect(page.locator('.detailRibbon .jf-trickplay-rebuild-status')).toHaveCount(0);
     expect(posts(state)).toHaveLength(1);
     expect(posts(state)[0].path).toBe('/jellyfin/TrickplayRebuild/Items/' + itemId);
     expect(posts(state)[0].authorization).toBe('MediaBrowser Token="test-token"');
@@ -151,6 +153,27 @@ test('does not retry an uncertain POST', async ({ page }) => {
     await page.clock.install();
     await page.clock.runFor(30000);
     expect(posts(state)).toHaveLength(1);
+});
+
+test('pauses active status requests while the tab is hidden and resumes on return', async ({ page }) => {
+    const state = await open(page);
+    await expect(button(page)).toBeVisible();
+    await button(page).click();
+    await toast(page, '已提交');
+    await expect.poll(() => reads(state).length).toBe(2);
+    await page.clock.install();
+    await page.evaluate(() => {
+        Object.defineProperty(document, 'hidden', { configurable: true, value: true });
+        document.dispatchEvent(new Event('visibilitychange'));
+    });
+    const count = reads(state).length;
+    await page.clock.runFor(30000);
+    expect(reads(state)).toHaveLength(count);
+    await page.evaluate(() => {
+        Object.defineProperty(document, 'hidden', { configurable: true, value: false });
+        document.dispatchEvent(new Event('visibilitychange'));
+    });
+    await expect.poll(() => reads(state).length).toBe(count + 1);
 });
 
 test('cleans up on SPA navigation and suppresses work after account changes', async ({ page }) => {

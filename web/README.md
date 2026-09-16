@@ -31,6 +31,14 @@
 
 脚本只影响安装它的浏览器；其他浏览器需要分别安装。Findroid Android 客户端不受影响。
 
+## 界面预览
+
+真实 Jellyfin Web 12.0，使用本地合成测试视频：
+
+![桌面详情页与原生提示](screenshots/desktop.png)
+
+[手机布局预览](screenshots/mobile.png)（浏览器模拟 Pixel 7）。
+
 ## 安全与兼容边界
 
 仅使用当前 Jellyfin 已登录会话。服务器与 Web 必须同源（普通 Docker 部署及同源反向

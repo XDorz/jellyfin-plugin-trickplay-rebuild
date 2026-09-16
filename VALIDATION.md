@@ -1,5 +1,31 @@
 # Validation — 2026-09-16
 
+## Jellyfin Web userscript 1.0.1
+
+18 Chromium browser tests pass locally and cover native button placement, selected
+media versions, administrator visibility, duplicate submissions, HTTP error toasts,
+uncertain POSTs without retries, polling completion/background pause, SPA cleanup,
+account changes, subpaths, cross-origin refusal and repeated script loading.
+
+Installed the checksum-verified official Jellyfin Web 12.0 package alongside an
+isolated official Jellyfin 12.0 server and server plugin 1.0.1.0. Signed in through
+the real Web login page and injected the same userscript into its detail page.
+Verified:
+
+- The added button inherits the same computed color, background, radius, padding,
+  font size and height as a visible native detail button.
+- Clicking sends an authenticated POST accepted with 202 and calls the real native
+  toast for submission, duplicate clicks and completed generation.
+- Native generation completes; status is placed in the content flow below the
+  ribbon, so it does not displace the action buttons or title.
+- Desktop and emulated Pixel 7 layouts render correctly, without browser page errors.
+- The relevant detail-page, toast, dashboard and styling files are unchanged
+  between the v12.0 and v12.1 Web source tags.
+
+Screenshots are in `web/screenshots/`. The synthetic fixture has no production media.
+The browser test injects the script into the page; extension installation and real
+mobile-device behavior were not exercised. Only Chromium was tested.
+
 ## Plugin 1.0.1: Jellyfin 12.0 and 12.1 compatibility regression
 
 The 1.0.0 build incorrectly required Jellyfin 12.1 in its package references,

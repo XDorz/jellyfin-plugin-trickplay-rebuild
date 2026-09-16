@@ -2,7 +2,7 @@
 // @name         Jellyfin Trickplay Rebuild
 // @name:zh-CN   Jellyfin 单视频预览图重建
 // @namespace    https://github.com/XDorz/jellyfin-plugin-trickplay-rebuild
-// @version      1.0.0
+// @version      1.0.1
 // @description Add a native-style preview rebuild button to Jellyfin movie and episode details. Requires the Trickplay Rebuild server plugin.
 // @description:zh-CN 在 Jellyfin 影片和单集详情页添加原生风格的预览图重建按钮，需要安装 Trickplay Rebuild 服务端插件。
 // @author       XDorz
@@ -287,7 +287,11 @@
         label.className = 'itemMiscInfo hide ' + marker + '-status';
         label.setAttribute('role', 'status');
         label.setAttribute('aria-live', 'polite');
-        bar.after(label);
+        // The desktop ribbon is a flex row: adding a sibling of the buttons squeezes the title.
+        // Keep status in the native content flow below that ribbon, including on mobile.
+        const details = ctx.page.querySelector('.detailPagePrimaryContent');
+        if (details) details.prepend(label);
+        else ctx.page.appendChild(label);
         ctx.button = button;
         ctx.label = label;
         render(ctx);
