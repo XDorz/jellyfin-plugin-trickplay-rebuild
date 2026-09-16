@@ -1,0 +1,59 @@
+name: Build Trickplay rebuild plugin
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: trickplay-plugin-release
+  cancel-in-progress: false
+
+jobs:
+  plugin:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+      - name: Build and test
+        run: dotnet test TrickplayRebuild.Tests -c Release --nologo
+      - name: Package plugin
+        run: |
+          mkdir -p dist/TrickplayRebuild
+          cp TrickplayRebuild/bin/Release/net10.0/Findroid.TrickplayRebuild.dll dist/TrickplayRebuild/
+          cp TrickplayRebuild/meta.json dist/TrickplayRebuild/
+          cp README.md dist/TrickplayRebuild/README.md
+          cd dist
+          zip -r trickplay-rebuild-jellyfin-12.1.zip TrickplayRebuild
+          sha256sum trickplay-rebuild-jellyfin-12.1.zip > SHA256SUMS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: trickplay-rebuild-jellyfin-12.1
+          path: dist/*.*
+      - name: Update plugin release tag
+        run: |
+          git tag --force latest
+          git push --force origin refs/tags/latest
+      - name: Publish plugin
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: latest
+          target_commitish: ${{ github.sha }}
+          name: Trickplay Rebuild for Jellyfin 12.1
+          prerelease: true
+          make_latest: false
+          overwrite_files: true
+          body: |
+            Administrator-only single-video Trickplay regeneration, without metadata refresh.
+            Built for Jellyfin 12.1 (.NET 10). Extract the TrickplayRebuild directory into /config/data/plugins on LinuxServer and restart Jellyfin.
+            Uses native Jellyfin settings. Deduplicates plugin requests only; native jobs are not intercepted.
+          files: |
+            dist/trickplay-rebuild-jellyfin-12.1.zip
+            dist/SHA256SUMS

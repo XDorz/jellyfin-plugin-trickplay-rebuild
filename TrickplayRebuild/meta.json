@@ -1,0 +1,12 @@
+{
+  "guid": "64bed64c-dc31-424e-b462-d79e6eeff504",
+  "name": "Findroid Trickplay Rebuild",
+  "description": "Administrator-only single-video Trickplay regeneration without metadata refresh.",
+  "owner": "XDorz",
+  "category": "General",
+  "version": "1.0.0.0",
+  "targetAbi": "12.1.0.0",
+  "status": "Active",
+  "autoUpdate": false,
+  "assemblies": ["Findroid.TrickplayRebuild.dll"]
+}
